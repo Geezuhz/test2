@@ -25,7 +25,6 @@
 
 <script>
 async function fetchData(endpoint, containerId) {
-    // ✅ FIXED: Ensure the correct Netlify function path
     const url = `/.netlify/functions/apiFetch?url=${encodeURIComponent(endpoint)}`;
     console.log("Fetching data from:", url);
     const container = document.getElementById(containerId);
@@ -36,7 +35,7 @@ async function fetchData(endpoint, containerId) {
         const data = await response.json();
         console.log("API Response:", data);
 
-        // ✅ FIXED: Ensure we correctly access the API response
+        // ✅ FIX: Ensure we correctly access and display the API response
         if (data && data.data && Array.isArray(data.data)) {
             container.innerHTML = `<ul>${data.data.map(item => `<li>${item}</li>`).join("")}</ul>`;
         } else {
@@ -53,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchData("https://ps99.biggamesapi.io/api/collections", "collections-container");
 });
 </script>
+
 
 </body>
 </html>
