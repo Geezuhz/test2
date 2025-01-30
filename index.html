@@ -38,7 +38,7 @@ async function fetchLiveData() {
     const liveDataContainer = document.getElementById("live-data");
     liveDataContainer.innerHTML = "<p>Loading live data...</p>";
 
-    // ✅ Fixed API URLs (Ensuring all required query parameters are included)
+    // ✅ Fixed API URLs
     const endpoints = [
         { name: "⚔️ Active Clan Battle", url: "/.netlify/functions/apiFetch?url=" + encodeURIComponent("https://ps99.biggamesapi.io/api/activeClanBattle") },
         { name: "🏆 Top Clans (Sorted by Points)", url: "/.netlify/functions/apiFetch?url=" + encodeURIComponent("https://ps99.biggamesapi.io/api/clans?page=1&pageSize=10&sort=Points&sortOrder=desc") },
@@ -68,14 +68,45 @@ async function fetchLiveData() {
     }
 }
 
-// ✅ Format JSON object into readable HTML lists
+// ✅ Format JSON object into readable HTML lists & display images if available
 function formatLiveData(data) {
     if (!data || typeof data !== "object") return "<p>No data available</p>";
 
     let html = "<ul>";
 
-    for (const [key, value] of Object.entries(data)) {
-        html += `<li><strong>${formatKey(key)}:</strong> ${value ?? "N/A"}</li>`;
+    if (Array.isArray(data)) {
+        // ✅ If `data` is an array, loop through and format each clan object
+        data.forEach(clan => {
+            html += `
+                <li>
+                    <h5>${clan.clanName || "Unknown Clan"}</h5>
+                    <p><strong>Leader:</strong> ${clan.leader || "N/A"}</p>
+                    <p><strong>Members:</strong> ${clan.members || "N/A"}</p>
+                    <p><strong>Points:</strong> ${clan.points?.toLocaleString() || "N/A"}</p>
+                    ${clan.image ? `<img src="${clan.image}" alt="${clan.clanName}" style="max-width:100px;">` : ""}
+                </li>
+            `;
+        });
+    } else {
+        // ✅ If `data` is a single object, format its key-value pairs
+        html += `<li>${formatObject(data)}</li>`;
+    }
+
+    html += "</ul>";
+    return html;
+}
+
+// ✅ Convert objects into key-value HTML (including images)
+function formatObject(obj) {
+    let html = "<ul>";
+
+    for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === "string" && value.startsWith("https://")) {
+            // ✅ If the value is a URL, assume it's an image
+            html += `<li><strong>${formatKey(key)}:</strong><br><img src="${value}" alt="${key}" style="max-width:100px;"></li>`;
+        } else {
+            html += `<li><strong>${formatKey(key)}:</strong> ${value ?? "N/A"}</li>`;
+        }
     }
 
     html += "</ul>";
