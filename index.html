@@ -23,21 +23,22 @@
     <h2>Game Collections</h2>
     <ul id="collections-container">Loading...</ul>  <!-- ✅ Data will appear here -->
 <section id="live-data">
-    <h3>📊 Live Game Data</h3>
+    <h3>📊 Live In-Game Data</h3>
     <p>Loading...</p>
 </section>
+
 
 
 
 </main>
 
 <script>
-// ✅ Fetch and display live game data
+// ✅ Fetch and display live in-game values
 async function fetchLiveData() {
     const liveDataContainer = document.getElementById("live-data");
     liveDataContainer.innerHTML = "<p>Loading live data...</p>";
 
-    // ✅ List of APIs to fetch (Live Game Data)
+    // ✅ List of APIs to fetch (Live In-Game Data)
     const endpoints = [
         { name: "⚔️ Active Clan Battle", url: "/.netlify/functions/apiFetch?url=https://ps99.biggamesapi.io/api/activeClanBattle" },
         { name: "🏆 Top Clans (Sorted by Points)", url: "/.netlify/functions/apiFetch?url=https://ps99.biggamesapi.io/api/clans?page=1&pageSize=10&sort=Points&sortOrder=desc" },
@@ -45,7 +46,7 @@ async function fetchLiveData() {
     ];
 
     try {
-        let html = "<h3>📊 Live Game Data</h3>";
+        let html = "<h3>📊 Live In-Game Data</h3>";
 
         // ✅ Loop through each API and fetch its data
         for (const endpoint of endpoints) {
@@ -54,7 +55,7 @@ async function fetchLiveData() {
             const responseData = await response.json();
             console.log(`API Response (${endpoint.name}):`, responseData);
 
-            // ✅ Ensure we correctly access `data`
+            // ✅ Ensure we correctly access `data` for in-game values
             if (responseData && responseData.data) {
                 html += `<h4>${endpoint.name}</h4>${formatLiveData(responseData.data)}`;
             } else {
@@ -65,11 +66,11 @@ async function fetchLiveData() {
         liveDataContainer.innerHTML = html;
     } catch (error) {
         console.error("Live Data Fetch Error:", error);
-        liveDataContainer.innerHTML = "<p class='error'>Failed to load live data.</p>";
+        liveDataContainer.innerHTML = "<p class='error'>Failed to load live in-game data.</p>";
     }
 }
 
-// ✅ Format JSON object into a clean HTML list
+// ✅ Format JSON object into readable HTML lists
 function formatLiveData(data) {
     if (!data || typeof data !== "object") return "<p>No data available</p>";
 
@@ -91,12 +92,13 @@ function formatKey(key) {
         .trim();
 }
 
-// ✅ Auto-refresh live data every 30 seconds
+// ✅ Auto-refresh live in-game data every 30 seconds
 setInterval(fetchLiveData, 30000);
 
 // ✅ Load data on page load
 document.addEventListener("DOMContentLoaded", fetchLiveData);
 </script>
+
 
 
 </body>
