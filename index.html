@@ -25,90 +25,57 @@
 </main>
 
 <script>
-async function fetchCategories() {
-    const categoriesUrl = "/.netlify/functions/apiFetch?url=https://ps99.biggamesapi.io/api/collections";
-    console.log("Fetching categories from:", categoriesUrl);
-    const container = document.getElementById("collections-container");
+// ✅ Function to fetch and update live game data
+async function fetchLiveData() {
+    const liveDataContainer = document.getElementById("live-data");
+    liveDataContainer.innerHTML = "<p>Loading live data...</p>";
+
+    // ✅ List of APIs to fetch (Live Game Data)
+    const endpoints = [
+        { name: "⚔️ Active Clan Battle", url: "/.netlify/functions/apiFetch?url=https://ps99.biggamesapi.io/api/activeClanBattle" },
+        { name: "🏆 Top Clans (Sorted by Points)", url: "/.netlify/functions/apiFetch?url=https://ps99.biggamesapi.io/api/clans?page=1&pageSize=10&sort=Points&sortOrder=desc" },
+        { name: "👑 Example Clan: CAT", url: "/.netlify/functions/apiFetch?url=https://ps99.biggamesapi.io/api/clan/CAT" }
+    ];
 
     try {
-        const response = await fetch(categoriesUrl);
-        if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
-        const categoriesData = await response.json();
-        console.log("API Response (Categories):", categoriesData);
+        let html = "<h3>📊 Live Game Data</h3>";
 
-        if (categoriesData && categoriesData.data && Array.isArray(categoriesData.data)) {
-            container.innerHTML = ""; // Clear loading text
+        // ✅ Loop through each API and fetch its data
+        for (const endpoint of endpoints) {
+            const response = await fetch(endpoint.url);
+            if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+            const data = await response.json();
+            console.log(`API Response (${endpoint.name}):`, data);
 
-            // Fetch detailed data for each category
-            for (const category of categoriesData.data) {
-                await fetchCategoryDetails(category, container);
-            }
-        } else {
-            container.innerHTML = "<p class='error'>Unexpected API response format.</p>";
+            // ✅ Display formatted data
+            html += `<h4>${endpoint.name}</h4>${formatLiveData(data)}`;
         }
+
+        liveDataContainer.innerHTML = html;
     } catch (error) {
-        console.error("API Fetch Error:", error);
-        container.innerHTML = `<p class='error'>Failed to load data.</p>`;
+        console.error("Live Data Fetch Error:", error);
+        liveDataContainer.innerHTML = "<p class='error'>Failed to load live data.</p>";
     }
 }
 
-// ✅ Fetch detailed data for each category and display it properly
-async function fetchCategoryDetails(category, container) {
-    const categoryUrl = `/.netlify/functions/apiFetch?url=https://ps99.biggamesapi.io/api/collection/${encodeURIComponent(category)}`;
-    console.log("Fetching details for:", categoryUrl);
-
-    try {
-        const response = await fetch(categoryUrl);
-        if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
-        const categoryData = await response.json();
-        console.log(`API Response (${category}):`, categoryData);
-
-        // ✅ Ensure data format is correct
-        if (!categoryData || !categoryData.data) {
-            return;
-        }
-
-        // ✅ Display category and its details
-        const categoryElement = document.createElement("div");
-        categoryElement.innerHTML = `<h3>${category}</h3>`;
-        const list = document.createElement("ul");
-
-        // If data is an array, display it as a list
-        if (Array.isArray(categoryData.data)) {
-            categoryData.data.forEach(item => {
-                const listItem = document.createElement("li");
-                listItem.innerHTML = formatData(item);
-                list.appendChild(listItem);
-            });
-        } else {
-            // If it's an object, display its key-value pairs
-            for (const [key, value] of Object.entries(categoryData.data)) {
-                const listItem = document.createElement("li");
-                listItem.innerHTML = `<strong>${key}:</strong> ${value ?? "N/A"}`; // ✅ Fix null values
-                list.appendChild(listItem);
-            }
-        }
-
-        categoryElement.appendChild(list);
-        container.appendChild(categoryElement);
-    } catch (error) {
-        console.error(`Error fetching ${category}:`, error);
-    }
-}
-
-// ✅ Format JSON data nicely (Avoids displaying null values)
-function formatData(data) {
+// ✅ Format JSON data for display
+function formatLiveData(data) {
     if (typeof data === "object" && data !== null) {
-        return Object.entries(data)
-            .map(([key, value]) => `<strong>${key}:</strong> ${value ?? "N/A"}`) // ✅ Fix null values
-            .join("<br>");
+        return `<pre>${JSON.stringify(data, null, 2)
+            .replace(/null/g, '"N/A"') // Replace null values with "N/A"
+            .replace(/[{}"]/g, "") // Clean up JSON formatting
+        }</pre>`;
     }
-    return data ?? "N/A"; // ✅ Fix null values
+    return data ?? "N/A";
 }
+
+// ✅ Auto-refresh live data every 30 seconds
+setInterval(fetchLiveData, 30000);
 
 // ✅ Load data on page load
-document.addEventListener("DOMContentLoaded", fetchCategories);
+document.addEventListener("DOMContentLoaded", fetchLiveData);
 </script>
+
 
 </body>
 </html>
