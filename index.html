@@ -38,11 +38,11 @@ async function fetchLiveData() {
     const liveDataContainer = document.getElementById("live-data");
     liveDataContainer.innerHTML = "<p>Loading live data...</p>";
 
-    // ✅ List of APIs to fetch (Live In-Game Data)
+    // ✅ Fixed API URLs (Ensuring all required query parameters are included)
     const endpoints = [
-        { name: "⚔️ Active Clan Battle", url: "/.netlify/functions/apiFetch?url=https://ps99.biggamesapi.io/api/activeClanBattle" },
-        { name: "🏆 Top Clans (Sorted by Points)", url: "/.netlify/functions/apiFetch?url=https://ps99.biggamesapi.io/api/clans?page=1&pageSize=10&sort=Points&sortOrder=desc" },
-        { name: "👑 Example Clan: CAT", url: "/.netlify/functions/apiFetch?url=https://ps99.biggamesapi.io/api/clan/CAT" }
+        { name: "⚔️ Active Clan Battle", url: "/.netlify/functions/apiFetch?url=" + encodeURIComponent("https://ps99.biggamesapi.io/api/activeClanBattle") },
+        { name: "🏆 Top Clans (Sorted by Points)", url: "/.netlify/functions/apiFetch?url=" + encodeURIComponent("https://ps99.biggamesapi.io/api/clans?page=1&pageSize=10&sort=Points&sortOrder=desc") },
+        { name: "👑 Example Clan: CAT", url: "/.netlify/functions/apiFetch?url=" + encodeURIComponent("https://ps99.biggamesapi.io/api/clan/CAT") }
     ];
 
     try {
@@ -51,15 +51,13 @@ async function fetchLiveData() {
         // ✅ Loop through each API and fetch its data
         for (const endpoint of endpoints) {
             const response = await fetch(endpoint.url);
-            if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
             const responseData = await response.json();
             console.log(`API Response (${endpoint.name}):`, responseData);
 
-            // ✅ Ensure we correctly access `data` for in-game values
-            if (responseData && responseData.data) {
+            if (responseData.status === "ok" && responseData.data) {
                 html += `<h4>${endpoint.name}</h4>${formatLiveData(responseData.data)}`;
             } else {
-                html += `<h4>${endpoint.name}</h4><p>No data available</p>`;
+                html += `<h4>${endpoint.name}</h4><p class="error">❌ Error: ${responseData.error?.message || "Unknown error"}</p>`;
             }
         }
 
