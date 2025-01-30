@@ -52,7 +52,7 @@ async function fetchCategories() {
     }
 }
 
-// ✅ Fetch detailed data for each category
+// ✅ Fetch detailed data for each category and display it properly
 async function fetchCategoryDetails(category, container) {
     const categoryUrl = `/.netlify/functions/apiFetch?url=https://ps99.biggamesapi.io/api/collection/${encodeURIComponent(category)}`;
     console.log("Fetching details for:", categoryUrl);
@@ -63,16 +63,47 @@ async function fetchCategoryDetails(category, container) {
         const categoryData = await response.json();
         console.log(`API Response (${category}):`, categoryData);
 
+        // ✅ Ensure data format is correct
+        if (!categoryData || !categoryData.data) {
+            return;
+        }
+
         // ✅ Display category and its details
         const categoryElement = document.createElement("div");
-        categoryElement.innerHTML = `
-            <h3>${category}</h3>
-            <pre>${JSON.stringify(categoryData, null, 2)}</pre>
-        `;
+        categoryElement.innerHTML = `<h3>${category}</h3>`;
+        const list = document.createElement("ul");
+
+        // If data is an array, display it as a list
+        if (Array.isArray(categoryData.data)) {
+            categoryData.data.forEach(item => {
+                const listItem = document.createElement("li");
+                listItem.innerHTML = formatData(item);
+                list.appendChild(listItem);
+            });
+        } else {
+            // If it's an object, display its key-value pairs
+            for (const [key, value] of Object.entries(categoryData.data)) {
+                const listItem = document.createElement("li");
+                listItem.innerHTML = `<strong>${key}:</strong> ${value}`;
+                list.appendChild(listItem);
+            }
+        }
+
+        categoryElement.appendChild(list);
         container.appendChild(categoryElement);
     } catch (error) {
         console.error(`Error fetching ${category}:`, error);
     }
+}
+
+// ✅ Format JSON data nicely
+function formatData(data) {
+    if (typeof data === "object" && data !== null) {
+        return Object.entries(data)
+            .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
+            .join("<br>");
+    }
+    return data;
 }
 
 // ✅ Load data on page load
