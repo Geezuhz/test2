@@ -28,6 +28,7 @@
 </section>
 
 
+
 </main>
 
 <script>
@@ -50,12 +51,12 @@ async function fetchLiveData() {
         for (const endpoint of endpoints) {
             const response = await fetch(endpoint.url);
             if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
-            const data = await response.json();
-            console.log(`API Response (${endpoint.name}):`, data);
+            const responseData = await response.json();
+            console.log(`API Response (${endpoint.name}):`, responseData);
 
-            // ✅ Ensure we correctly access `data.data`
-            if (data && data.data) {
-                html += `<h4>${endpoint.name}</h4><ul>${formatLiveData(data.data)}</ul>`;
+            // ✅ Ensure we correctly access `data`
+            if (responseData && responseData.data) {
+                html += `<h4>${endpoint.name}</h4>${formatLiveData(responseData.data)}`;
             } else {
                 html += `<h4>${endpoint.name}</h4><p>No data available</p>`;
             }
@@ -68,22 +69,26 @@ async function fetchLiveData() {
     }
 }
 
-// ✅ Format JSON data into readable lists
+// ✅ Format JSON object into a clean HTML list
 function formatLiveData(data) {
-    if (!data || typeof data !== "object") return "<li>N/A</li>";
+    if (!data || typeof data !== "object") return "<p>No data available</p>";
 
-    if (Array.isArray(data)) {
-        return data.map(item => `<li>${formatObject(item)}</li>`).join("");
+    let html = "<ul>";
+
+    for (const [key, value] of Object.entries(data)) {
+        html += `<li><strong>${formatKey(key)}:</strong> ${value ?? "N/A"}</li>`;
     }
 
-    return `<li>${formatObject(data)}</li>`;
+    html += "</ul>";
+    return html;
 }
 
-// ✅ Convert objects into key-value HTML
-function formatObject(obj) {
-    return Object.entries(obj)
-        .map(([key, value]) => `<strong>${key}:</strong> ${value ?? "N/A"}`)
-        .join("<br>");
+// ✅ Properly format key names (e.g., "totalPoints" → "Total Points")
+function formatKey(key) {
+    return key
+        .replace(/([A-Z])/g, " $1") // Add space before capital letters
+        .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
+        .trim();
 }
 
 // ✅ Auto-refresh live data every 30 seconds
@@ -92,7 +97,6 @@ setInterval(fetchLiveData, 30000);
 // ✅ Load data on page load
 document.addEventListener("DOMContentLoaded", fetchLiveData);
 </script>
-
 
 
 </body>
