@@ -70,12 +70,12 @@ async function fetchLiveData() {
 
 // ✅ Format JSON object into readable HTML lists & display images if available
 function formatLiveData(data) {
-    if (!data || typeof data !== "object") return "<p>No data available</p>";
+    if (!data) return "<p>No data available</p>";
 
     let html = "<ul>";
 
     if (Array.isArray(data)) {
-        // ✅ If `data` is an array, loop through and format each clan object
+        // ✅ If `data` is an array (like Top Clans), loop through and format each object
         data.forEach(clan => {
             html += `
                 <li>
@@ -87,9 +87,11 @@ function formatLiveData(data) {
                 </li>
             `;
         });
-    } else {
-        // ✅ If `data` is a single object, format its key-value pairs
+    } else if (typeof data === "object") {
+        // ✅ If `data` is a single object (like Active Clan Battle or Example Clan), display its key-value pairs
         html += `<li>${formatObject(data)}</li>`;
+    } else {
+        html += `<li>${data}</li>`;
     }
 
     html += "</ul>";
