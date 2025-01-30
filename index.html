@@ -84,7 +84,7 @@ async function fetchCategoryDetails(category, container) {
             // If it's an object, display its key-value pairs
             for (const [key, value] of Object.entries(categoryData.data)) {
                 const listItem = document.createElement("li");
-                listItem.innerHTML = `<strong>${key}:</strong> ${value}`;
+                listItem.innerHTML = `<strong>${key}:</strong> ${value ?? "N/A"}`; // ✅ Fix null values
                 list.appendChild(listItem);
             }
         }
@@ -96,14 +96,14 @@ async function fetchCategoryDetails(category, container) {
     }
 }
 
-// ✅ Format JSON data nicely
+// ✅ Format JSON data nicely (Avoids displaying null values)
 function formatData(data) {
     if (typeof data === "object" && data !== null) {
         return Object.entries(data)
-            .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
+            .map(([key, value]) => `<strong>${key}:</strong> ${value ?? "N/A"}`) // ✅ Fix null values
             .join("<br>");
     }
-    return data;
+    return data ?? "N/A"; // ✅ Fix null values
 }
 
 // ✅ Load data on page load
