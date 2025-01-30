@@ -27,10 +27,11 @@
     <p>Loading...</p>
 </section>
 
+
 </main>
 
 <script>
-// ✅ Function to fetch and update live game data
+// ✅ Fetch and display live game data
 async function fetchLiveData() {
     const liveDataContainer = document.getElementById("live-data");
     liveDataContainer.innerHTML = "<p>Loading live data...</p>";
@@ -52,8 +53,12 @@ async function fetchLiveData() {
             const data = await response.json();
             console.log(`API Response (${endpoint.name}):`, data);
 
-            // ✅ Display formatted data
-            html += `<h4>${endpoint.name}</h4>${formatLiveData(data)}`;
+            // ✅ Ensure we correctly access `data.data`
+            if (data && data.data) {
+                html += `<h4>${endpoint.name}</h4><ul>${formatLiveData(data.data)}</ul>`;
+            } else {
+                html += `<h4>${endpoint.name}</h4><p>No data available</p>`;
+            }
         }
 
         liveDataContainer.innerHTML = html;
@@ -63,15 +68,22 @@ async function fetchLiveData() {
     }
 }
 
-// ✅ Format JSON data for display
+// ✅ Format JSON data into readable lists
 function formatLiveData(data) {
-    if (typeof data === "object" && data !== null) {
-        return `<pre>${JSON.stringify(data, null, 2)
-            .replace(/null/g, '"N/A"') // Replace null values with "N/A"
-            .replace(/[{}"]/g, "") // Clean up JSON formatting
-        }</pre>`;
+    if (!data || typeof data !== "object") return "<li>N/A</li>";
+
+    if (Array.isArray(data)) {
+        return data.map(item => `<li>${formatObject(item)}</li>`).join("");
     }
-    return data ?? "N/A";
+
+    return `<li>${formatObject(data)}</li>`;
+}
+
+// ✅ Convert objects into key-value HTML
+function formatObject(obj) {
+    return Object.entries(obj)
+        .map(([key, value]) => `<strong>${key}:</strong> ${value ?? "N/A"}`)
+        .join("<br>");
 }
 
 // ✅ Auto-refresh live data every 30 seconds
@@ -80,6 +92,7 @@ setInterval(fetchLiveData, 30000);
 // ✅ Load data on page load
 document.addEventListener("DOMContentLoaded", fetchLiveData);
 </script>
+
 
 
 </body>
