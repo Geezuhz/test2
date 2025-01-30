@@ -19,32 +19,39 @@
         <p>Explore collections, clans, and stats from the Big Games universe!</p>
     </header>
     <main class="container">
-        <div class="grid">
-            <section>
-                <h2>Game Collections</h2>
-                <div id="collections-container">Loading...</div>
-            </section>
-            <section>
-                <h2>Clans & Leaderboards</h2>
-                <div id="clans-container">Loading...</div>
-            </section>
-            <section>
-                <h2>Player Stats & Value</h2>
-                <div id="stats-container">Loading...</div>
-            </section>
-        </div>
-    </main>
+    <h2>Game Collections</h2>
+    <ul id="collections-container">Loading...</ul>  <!-- ✅ This is where data will appear -->
+</main>
+
     <script>
-        async function fetchData(endpoint) {
-            const url = `/api/${encodeURIComponent(endpoint)}`;
-            try {
-                const response = await fetch(url);
-                return await response.json();
-            } catch (error) {
-                console.error("API Error:", error);
-                return null;
-            }
+async function fetchData(endpoint, containerId) {
+    const url = `/apiFetch?url=${encodeURIComponent(endpoint)}`;
+    console.log("Fetching data from:", url);
+    const container = document.getElementById(containerId);
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+        const data = await response.json();
+        console.log("API Response:", data);
+
+        // Display data on the page
+        if (data.status === "ok" && Array.isArray(data.data)) {
+            container.innerHTML = data.data.map(item => `<li>${item}</li>`).join("");
+        } else {
+            container.innerHTML = "<p class='error'>No data found.</p>";
         }
-    </script>
+    } catch (error) {
+        console.error("API Fetch Error:", error);
+        container.innerHTML = `<p class='error'>Failed to load data.</p>`;
+    }
+}
+
+// Load collections data
+document.addEventListener("DOMContentLoaded", () => {
+    fetchData("https://ps99.biggamesapi.io/api/collections", "collections-container");
+});
+</script>
+
 </body>
 </html>
